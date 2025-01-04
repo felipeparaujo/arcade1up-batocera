@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+import gpiod
+from gpiod.line import Direction, Value
+
+chip_path = "/dev/gpiochip0"
+line_offset = 17
+value = Value.ACTIVE
+
+gpiod.request_lines(
+    chip_path,
+    config={
+        line_offset: gpiod.LineSettings(
+            direction=Direction.OUTPUT, output_value=value, active_low=True
+        )
+    },
+)

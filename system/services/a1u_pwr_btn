@@ -1,0 +1,22 @@
+#!/usr/bin/python
+
+
+from subprocess import call
+from datetime import timedelta
+
+import gpiod
+from gpiod.line import Edge
+
+chip_path = "/dev/gpiochip0"
+line_offset = 3
+
+with gpiod.request_lines(
+    chip_path,
+    config={
+        line_offset: gpiod.LineSettings(
+            edge_detection=Edge.RISING, debounce_period=timedelta(milliseconds=10)
+        )
+    },
+) as request:
+    for event in request.read_edge_events():
+        call(["batocera-es-swissknife", "--shutdown"])

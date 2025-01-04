@@ -1,0 +1,69 @@
+#!/usr/bin/python
+
+from datetime import timedelta
+import time
+from subprocess import call, check_output
+
+import gpiod
+from gpiod.line import Edge, Bias, Direction, Value
+
+
+chip_path = "/dev/gpiochip0"
+vol_down_pin = 24
+vol_up_pin = 23
+volume = int(check_output(["batocera-audio", "getSystemVolume"]).decode().strip())
+
+vol_down_settings = gpiod.LineSettings(
+    direction=Direction.INPUT,
+    bias=Bias.PULL_DOWN,
+    edge_detection=Edge.BOTH,
+    debounce_period=timedelta(milliseconds=10),
+)
+
+vol_up_settings = gpiod.LineSettings(
+    direction=Direction.INPUT,
+    bias=Bias.PULL_UP,
+    edge_detection=Edge.BOTH,
+    active_low=True,
+    debounce_period=timedelta(milliseconds=10),
+)
+
+
+def is_btn_held(request, pin):
+    return lambda: request.get_value(pin) == Value.ACTIVE
+
+
+def step_volume(step):
+    global volume
+    volume = max(min(volume + step, 100), 0)
+    call(["batocera-audio", "setSystemVolume", f"{volume}"])
+
+
+def change_volume(is_held, step):
+    step_volume(step)
+    start = time.time()
+    while is_held():
+        if time.time() - start >= 0.3:
+            step_volume(step)
+            start = time.time()
+
+
+with gpiod.request_lines(
+    chip_path,
+    config={
+        vol_down_pin: vol_down_settings,
+        vol_up_pin: vol_up_settings,
+    },
+) as request:
+    while True:
+        for event in request.read_edge_events():
+            if (
+                event.line_offset == vol_down_pin
+                and event.event_type is event.Type.RISING_EDGE
+            ):
+                change_volume(is_btn_held(request, vol_down_pin), -10)
+            elif (
+                event.line_offset == vol_up_pin
+                and event.event_type is event.Type.RISING_EDGE
+            ):
+                change_volume(is_btn_held(request, vol_up_pin), 10)

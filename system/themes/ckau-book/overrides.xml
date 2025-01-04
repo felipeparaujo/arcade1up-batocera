@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<theme>
+  <formatVersion>7</formatVersion>
+
+  <!-- reduce menu font size -->
+  <view name="menu">
+    <menuText name="menutitle">
+      <fontSize>0.035</fontSize>
+    </menuText>
+    <menuText name="menufooter">
+      <fontSize>0.02</fontSize>
+    </menuText>
+    <menuText name="menutext" extra="true" tinyScreen="false">
+      <fontSize>0.03</fontSize>
+    </menuText>
+    <menuTextSmall name="menutextsmall" extra="true" tinyScreen="false">
+      <fontSize>0.02</fontSize>
+    </menuTextSmall>
+  </view>
+
+  <!-- move games count to the left -->
+  <view name="system">
+    <text ifSubset="showgamescount:yes" name="systemInfo" extra="static">
+      <pos>0.01 0.945</pos>
+      <size>0.30 0.058</size>
+      <alignment>left</alignment>
+    </text>
+
+    <!-- don't animate out (hide) system logo when showing system details -->
+    <image name="logo">
+      <storyboard event="activate">
+        <animation property="opacity" from="0" to="1" duration="150" mode="Linear" />
+        <animation property="opacity" from="1" to="1" begin="1150" duration="35" mode="Linear" />
+      </storyboard>
+    </image>
+  </view>
+
+  <!-- it looks like something was letting thumbnails get too big with my settings,
+  this ensures maxSize still exists -->
+  <customView name="WallpapersHeroes">
+    <image name="md_thumbnail">
+      <maxSize>0.23 0.63</maxSize>
+    </image>
+    <video name="md_video">
+      <pos>0.448 0.925</pos>
+      <maxSize>0.35</maxSize>
+    </video>
+  </customView>
+</theme>
